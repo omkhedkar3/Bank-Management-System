@@ -15,6 +15,32 @@ A desktop banking application developed in Java using the Eclipse IDE, featuring
 - **Robust Exception Handling**: Custom domain-level exceptions (`InsufficientFundsException`, `AccountNotFoundException`, `InvalidAmountException`).
 
 ---
+🛠️ Tech Stack & Prerequisites
+Language: Java (JDK 17 or higher recommended)
+Development Environment: Eclipse IDE for Java Developers
+GUI Toolkit: Java Swing / AWT
+Persistence: Java Object Serialization (java.io.Serializable)
+
+🚀 How to Run in Eclipse
+Open Eclipse IDE.
+Go to File -> Open Projects from File System... (or File -> Import -> Existing Projects into Workspace).
+Select the BankManagementSystem directory and click Finish.
+In the Package Explorer, expand src/com/bank and locate Main.java.
+Right-click Main.java and select Run As -> Java Application.
+
+📖 Usage Guide
+Create an Account:
+Click Open New Account on the login screen.
+Enter your full name, a 4-digit PIN, and an optional initial deposit.
+Note down the generated 6-digit Account Number.
+Login:
+Enter your Account Number and PIN to access the dashboard.
+Perform Operations:
+Use the Deposit, Withdraw, and Transfer buttons at the bottom to perform transactions.
+Watch the real-time balance card and the transaction table update automatically.
+Sign Out:
+
+Click Sign Out to return to the login screen. All records are automatically saved to bank_data.dat.
 
 ## 🏗️ Project Architecture
 
@@ -43,45 +69,3 @@ BankManagementSystem/
 ├── bank_data.dat               # Auto-generated binary storage file
 └── README.md
 
-🛠️ Tech Stack & Prerequisites
-Language: Java (JDK 17 or higher recommended)
-
-Development Environment: Eclipse IDE for Java Developers
-
-GUI Toolkit: Java Swing / AWT
-
-Persistence: Java Object Serialization (java.io.Serializable)
-
-🚀 How to Run in Eclipse
-Open Eclipse IDE.
-
-Go to File -> Open Projects from File System... (or File -> Import -> Existing Projects into Workspace).
-
-Select the BankManagementSystem directory and click Finish.
-
-In the Package Explorer, expand src/com/bank and locate Main.java.
-
-Right-click Main.java and select Run As -> Java Application.
-
-📖 Usage Guide
-Create an Account:
-
-Click Open New Account on the login screen.
-
-Enter your full name, a 4-digit PIN, and an optional initial deposit.
-
-Note down the generated 6-digit Account Number.
-
-Login:
-
-Enter your Account Number and PIN to access the dashboard.
-
-Perform Operations:
-
-Use the Deposit, Withdraw, and Transfer buttons at the bottom to perform transactions.
-
-Watch the real-time balance card and the transaction table update automatically.
-
-Sign Out:
-
-Click Sign Out to return to the login screen. All records are automatically saved to bank_data.dat.
