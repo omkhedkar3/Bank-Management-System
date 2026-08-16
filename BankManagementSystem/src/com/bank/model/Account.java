@@ -1,0 +1,36 @@
+package com.bank.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Account implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final String accountNumber;
+    private final String holderName;
+    private final String pin;
+    private double balance;
+    private final List<Transaction> transactions;
+
+    public Account(String accountNumber, String holderName, String pin, double initialDeposit) {
+        this.accountNumber = accountNumber;
+        this.holderName = holderName;
+        this.pin = pin;
+        this.balance = initialDeposit;
+        this.transactions = new ArrayList<>();
+        if (initialDeposit > 0) {
+            this.transactions.add(new Transaction("INITIAL DEPOSIT", initialDeposit, initialDeposit));
+        }
+    }
+
+    public String getAccountNumber() { return accountNumber; }
+    public String getHolderName() { return holderName; }
+    public double getBalance() { return balance; }
+    public boolean validatePin(String inputPin) { return this.pin.equals(inputPin); }
+    public List<Transaction> getTransactions() { return Collections.unmodifiableList(transactions); }
+
+    public void setBalance(double balance) { this.balance = balance; }
+    public void addTransaction(Transaction transaction) { this.transactions.add(transaction); }
+}

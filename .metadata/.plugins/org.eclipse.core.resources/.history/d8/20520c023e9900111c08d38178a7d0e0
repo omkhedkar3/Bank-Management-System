@@ -1,0 +1,103 @@
+package com.bank.service;
+
+import com.bank.exception.AccountNotFoundException;
+import com.bank.exception.InsufficientFundsException;
+import com.bank.exception.InvalidAmountException;
+import com.bank.model.Account;
+import com.bank.model.Transaction;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+public class BankServiceImpl implements BankService {
+    private final Map<String, Account> accounts = new HashMap<>();
+
+    @Override
+    public synchronized Account createAccount(String name, String pin, double initialDeposit) throws InvalidAmountException {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account holder name cannot be empty.");
+        }
+        if (pin == null || !pin.matches("\\d{4}")) {
+            throw new IllegalArgumentException("PIN must be exactly 4 digits.");
+        }
+        if (initialDeposit < 0) {
+            throw new InvalidAmountException("Initial deposit cannot be negative.");
+        }
+
+        String accNum = String.valueOf(100000 + new Random().nextInt(900000));
+        Account account = new Account(accNum, name.trim(), pin, initialDeposit);
+        accounts.put(accNum, account);
+        return account;
+    }
+
+    @Override
+    public Account authenticate(String accountNumber, String pin) throws AccountNotFoundException {
+        Account acc = accounts.get(accountNumber);
+        if (acc == null || !acc.validatePin(pin)) {
+            throw new AccountNotFoundException("Invalid Account Number or PIN.");
+        }
+        return acc;
+    }
+
+    @Override
+    public synchronized void deposit(String accountNumber, double amount) throws AccountNotFoundException, InvalidAmountException {
+        if (amount <= 0) {
+            throw new InvalidAmountException("Deposit amount must be greater than zero.");
+        }
+        Account acc = accounts.get(accountNumber);
+        if (acc == null) {
+            throw new AccountNotFoundException("Account not found: " + accountNumber);
+        }
+
+        double newBalance = acc.getBalance() + amount;
+        acc.setBalance(newBalance);
+        acc.addTransaction(new Transaction("DEPOSIT", amount, newBalance));
+    }
+
+    @Override
+    public synchronized void withdraw(String accountNumber, double amount) throws AccountNotFoundException, InsufficientFundsException, InvalidAmountException {
+        if (amount <= 0) {
+            throw new InvalidAmountException("Withdrawal amount must be greater than zero.");
+        }
+        Account acc = accounts.get(accountNumber);
+        if (acc == null) {
+            throw new AccountNotFoundException("Account not found: " + accountNumber);
+        }
+        if (acc.getBalance() < amount) {
+            throw new InsufficientFundsException("Insufficient funds. Available: $" + String.format("%.2f", acc.getBalance()));
+        }
+
+        double newBalance = acc.getBalance() - amount;
+        acc.setBalance(newBalance);
+        acc.addTransaction(new Transaction("WITHDRAWAL", amount, newBalance));
+    }
+
+    @Override
+    public synchronized void transfer(String fromAccNum, String toAccNum, double amount) throws AccountNotFoundException, InsufficientFundsException, InvalidAmountException {
+        if (fromAccNum.equals(toAccNum)) {
+            throw new IllegalArgumentException("Cannot transfer money to the same account.");
+        }
+        Account recipient = accounts.get(toAccNum);
+        if (recipient == null) {
+            throw new AccountNotFoundException("Recipient account " + toAccNum + " does not exist.");
+        }
+
+        withdraw(fromAccNum, amount);
+        try {
+            deposit(toAccNum, amount);
+        } catch (Exception e) {
+            deposit(fromAccNum, amount); // Rollback if something unexpected happens
+            throw e;
+        }
+    }
+
+    @Override
+    public Account getAccount(String accountNumber) throws AccountNotFoundException {
+        Account acc = accounts.get(accountNumber);
+        if (acc == null) {
+            throw new AccountNotFoundException("Account not found: " + accountNumber);
+        }
+        return acc;
+    }
+}

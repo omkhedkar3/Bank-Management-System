@@ -1,0 +1,134 @@
+package com.bank.ui;
+
+import com.bank.model.Account;
+import com.bank.model.Transaction;
+import com.bank.service.BankService;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class DashboardFrame extends JFrame {
+    private final BankService bankService;
+    private final Account account;
+    private final JLabel balanceLabel;
+    private final DefaultListModel<String> historyModel;
+
+    public DashboardFrame(BankService bankService, Account account) {
+        this.bankService = bankService;
+        this.account = account;
+
+        setTitle("Dashboard - " + account.getHolderName() + " (" + account.getAccountNumber() + ")");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 450);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel topPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15));
+        
+        JLabel welcomeLabel = new JLabel("Welcome, " + account.getHolderName() + " (Account No: " + account.getAccountNumber() + ")");
+        welcomeLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        topPanel.add(welcomeLabel);
+        
+        balanceLabel = new JLabel();
+        balanceLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        updateBalance();
+        topPanel.add(balanceLabel);
+        add(topPanel, BorderLayout.NORTH);
+
+        historyModel = new DefaultListModel<>();
+        JList<String> historyList = new JList<>(historyModel);
+        historyList.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        updateHistory();
+        
+        JScrollPane scrollPane = new JScrollPane(historyList);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Transaction History"));
+        add(scrollPane, BorderLayout.CENTER);
+
+        JPanel actionPanel = new JPanel(new GridLayout(1, 4, 10, 10));
+        actionPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 15, 15));
+        JButton depositBtn = new JButton("Deposit");
+        JButton withdrawBtn = new JButton("Withdraw");
+        JButton transferBtn = new JButton("Transfer");
+        JButton logoutBtn = new JButton("Logout");
+
+        actionPanel.add(depositBtn);
+        actionPanel.add(withdrawBtn);
+        actionPanel.add(transferBtn);
+        actionPanel.add(logoutBtn);
+        add(actionPanel, BorderLayout.SOUTH);
+
+        depositBtn.addActionListener(e -> promptDeposit());
+        withdrawBtn.addActionListener(e -> promptWithdraw());
+        transferBtn.addActionListener(e -> promptTransfer());
+        logoutBtn.addActionListener(e -> {
+            new LoginFrame(bankService).setVisible(true);
+            dispose();
+        });
+    }
+
+    private void updateBalance() { 
+        balanceLabel.setText(String.format("Current Balance: $%.2f", account.getBalance())); 
+    }
+    
+    private void updateHistory() {
+        historyModel.clear();
+        for (Transaction t : account.getTransactions()) {
+            historyModel.addElement(t.toString());
+        }
+    }
+
+    private void promptDeposit() {
+        String input = JOptionPane.showInputDialog(this, "Enter deposit amount ($):");
+        if (input != null && !input.trim().isEmpty()) {
+            try {
+                double amt = Double.parseDouble(input.trim());
+                bankService.deposit(account.getAccountNumber(), amt);
+                updateBalance();
+                updateHistory();
+                JOptionPane.showMessageDialog(this, "Deposit successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid numeric value.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void promptWithdraw() {
+        String input = JOptionPane.showInputDialog(this, "Enter withdrawal amount ($):");
+        if (input != null && !input.trim().isEmpty()) {
+            try {
+                double amt = Double.parseDouble(input.trim());
+                bankService.withdraw(account.getAccountNumber(), amt);
+                updateBalance();
+                updateHistory();
+                JOptionPane.showMessageDialog(this, "Withdrawal successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid numeric value.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void promptTransfer() {
+        String targetAcc = JOptionPane.showInputDialog(this, "Enter recipient's 6-digit account number:");
+        if (targetAcc != null && !targetAcc.trim().isEmpty()) {
+            String input = JOptionPane.showInputDialog(this, "Enter amount to transfer ($):");
+            if (input != null && !input.trim().isEmpty()) {
+                try {
+                    double amt = Double.parseDouble(input.trim());
+                    bankService.transfer(account.getAccountNumber(), targetAcc.trim(), amt);
+                    updateBalance();
+                    updateHistory();
+                    JOptionPane.showMessageDialog(this, "Transferred $" + amt + " to account " + targetAcc.trim() + " successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid numeric value.", "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+}

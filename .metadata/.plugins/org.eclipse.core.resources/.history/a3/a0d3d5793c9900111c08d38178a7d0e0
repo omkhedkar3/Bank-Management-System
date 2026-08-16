@@ -1,0 +1,51 @@
+package com.bank.ui;
+
+import com.bank.model.Account;
+import com.bank.service.BankService;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class LoginFrame extends JFrame {
+    private final BankService bankService;
+    private final JTextField accField = new JTextField(15);
+    private final JPasswordField pinField = new JPasswordField(15);
+
+    public LoginFrame(BankService bankService) {
+        this.bankService = bankService;
+        setTitle("Bank Management System - Login");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(380, 200);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel panel = new JPanel(new GridLayout(3, 2, 8, 8));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        panel.add(new JLabel("Account Number:"));
+        panel.add(accField);
+        panel.add(new JLabel("4-Digit PIN:"));
+        panel.add(pinField);
+
+        JButton loginBtn = new JButton("Login");
+        JButton registerBtn = new JButton("Open Account");
+        panel.add(loginBtn);
+        panel.add(registerBtn);
+
+        add(panel, BorderLayout.CENTER);
+
+        loginBtn.addActionListener(e -> handleLogin());
+        registerBtn.addActionListener(e -> new CreateAccountDialog(this, bankService).setVisible(true));
+    }
+
+    private void handleLogin() {
+        try {
+            String accNum = accField.getText().trim();
+            String pin = new String(pinField.getPassword()).trim();
+            Account account = bankService.authenticate(accNum, pin);
+            new DashboardFrame(bankService, account).setVisible(true);
+            dispose();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Authentication Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}

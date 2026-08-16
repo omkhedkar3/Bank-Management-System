@@ -1,0 +1,126 @@
+package com.bank.ui;
+
+import com.bank.model.Account;
+import com.bank.service.BankService;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+
+public class LoginFrame extends JFrame {
+    private final BankService bankService;
+    private final JTextField accField;
+    private final JPasswordField pinField;
+
+    public LoginFrame(BankService bankService) {
+        this.bankService = bankService;
+
+        setTitle("Secure Banking Portal - Login");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(420, 480);
+        setLocationRelativeTo(null);
+        setResizable(false);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(new Color(245, 247, 250));
+        mainPanel.setBorder(new EmptyBorder(30, 40, 30, 40));
+
+        JLabel headerIcon = new JLabel("🏦", SwingConstants.CENTER);
+        headerIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 42));
+        headerIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel titleLabel = new JLabel("Kinetrexa Global Bank");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(30, 41, 59));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel subTitleLabel = new JLabel("Enter your credentials to continue");
+        subTitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        subTitleLabel.setForeground(new Color(100, 116, 139));
+        subTitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        mainPanel.add(headerIcon);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        mainPanel.add(titleLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 4)));
+        mainPanel.add(subTitleLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+
+        JLabel accLabel = new JLabel("Account Number");
+        accLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        accLabel.setForeground(new Color(51, 65, 85));
+
+        accField = new JTextField();
+        styleTextField(accField);
+
+        JLabel pinLabel = new JLabel("4-Digit Security PIN");
+        pinLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        pinLabel.setForeground(new Color(51, 65, 85));
+
+        pinField = new JPasswordField();
+        styleTextField(pinField);
+
+        mainPanel.add(wrapField(accLabel, accField));
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 12)));
+        mainPanel.add(wrapField(pinLabel, pinField));
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        JButton loginBtn = createStyledButton("Sign In", new Color(37, 99, 235), Color.WHITE);
+        JButton registerBtn = createStyledButton("Open New Account", new Color(226, 232, 240), new Color(30, 41, 59));
+
+        loginBtn.addActionListener(e -> handleLogin());
+        registerBtn.addActionListener(e -> new CreateAccountDialog(this, bankService).setVisible(true));
+
+        mainPanel.add(loginBtn);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        mainPanel.add(registerBtn);
+
+        add(mainPanel);
+    }
+
+    private JPanel wrapField(JLabel label, JComponent field) {
+        JPanel wrapper = new JPanel(new BorderLayout(5, 5));
+        wrapper.setOpaque(false);
+        wrapper.setMaximumSize(new Dimension(340, 60));
+        label.setHorizontalAlignment(SwingConstants.LEFT);
+        wrapper.add(label, BorderLayout.NORTH);
+        wrapper.add(field, BorderLayout.CENTER);
+        return wrapper;
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setPreferredSize(new Dimension(320, 38));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(203, 213, 225), 1, true),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+    }
+
+    private JButton createStyledButton(String text, Color bgColor, Color fgColor) {
+        JButton btn = new JButton(text);
+        btn.setMaximumSize(new Dimension(340, 40));
+        btn.setPreferredSize(new Dimension(340, 40));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setBackground(bgColor);
+        btn.setForeground(fgColor);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return btn;
+    }
+
+    private void handleLogin() {
+        try {
+            String accNum = accField.getText().trim();
+            String pin = new String(pinField.getPassword()).trim();
+            Account account = bankService.authenticate(accNum, pin);
+            new DashboardFrame(bankService, account).setVisible(true);
+            dispose();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Authentication Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}

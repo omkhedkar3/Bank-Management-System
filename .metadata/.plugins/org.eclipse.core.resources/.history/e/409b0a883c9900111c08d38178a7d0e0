@@ -1,0 +1,47 @@
+package com.bank.ui;
+
+import com.bank.model.Account;
+import com.bank.service.BankService;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class CreateAccountDialog extends JDialog {
+    public CreateAccountDialog(Frame owner, BankService bankService) {
+        super(owner, "Create New Account", true);
+        setSize(350, 230);
+        setLocationRelativeTo(owner);
+        setLayout(new GridLayout(4, 2, 8, 8));
+
+        JTextField nameField = new JTextField();
+        JPasswordField pinField = new JPasswordField();
+        JTextField depositField = new JTextField();
+        JButton submitBtn = new JButton("Create Account");
+
+        add(new JLabel(" Full Name:"));
+        add(nameField);
+        add(new JLabel(" 4-Digit PIN:"));
+        add(pinField);
+        add(new JLabel(" Initial Deposit ($):"));
+        add(depositField);
+        add(new JLabel(""));
+        add(submitBtn);
+
+        submitBtn.addActionListener(e -> {
+            try {
+                String name = nameField.getText();
+                String pin = new String(pinField.getPassword());
+                double deposit = Double.parseDouble(depositField.getText().trim());
+                Account acc = bankService.createAccount(name, pin, deposit);
+                JOptionPane.showMessageDialog(this, 
+                    "Account Created Successfully!\nYour Account Number is: " + acc.getAccountNumber() + "\nPlease remember this for logging in.", 
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid numeric deposit amount.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
+}
