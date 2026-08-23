@@ -44,7 +44,7 @@ Click Sign Out to return to the login screen. All records are automatically save
 
 ## 🏗️ Project Architecture
 
-The project adheres to a modular, layered architecture:
+The project adheres to a modular, layered architecture: 
 
 ```text
 BankManagementSystem/
